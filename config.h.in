@@ -1,4 +1,0 @@
-#pragma once
-
-static constexpr const wchar_t LAUNCHER_PROGRAM[] = LR"(@LAUNCHER_PROGRAM@)";
-static constexpr const wchar_t LAUNCHER_ARGUMENTS[] = LR"(@LAUNCHER_ARGUMENTS@)";
