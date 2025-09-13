@@ -12,7 +12,28 @@ if exist "%ProgramFiles%\Microsoft Visual Studio\2022\Community\Common7\Tools\Vs
   )
 )
 
-cmake -S . -B build
-cmake --build build --config Release
+cls
+
+set "_SD=%~dp0"
+set "SRC_DIR=%_SD:~0,-1%"
+set "BUILD_DIR=%SRC_DIR%\build"
+
+echo SRC_DIR is %SRC_DIR%
+echo BUILD_DIR is %BUILD_DIR%
+
+if exist "%BUILD_DIR%" rmdir /s /q "%BUILD_DIR%"
+
+mkdir "%BUILD_DIR%"
+
+cmake -S "%SRC_DIR%" -B "%BUILD_DIR%"
+if errorlevel 1 (
+  pause
+  exit /b %errorlevel%
+)
+cmake --build "%BUILD_DIR%" --config Release
+if errorlevel 1 (
+  pause
+  exit /b %errorlevel%
+)
 echo 'launcher.exe' is at 'build/Release'
 pause
