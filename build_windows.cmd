@@ -1,13 +1,25 @@
 @echo off
+chcp 65001
+setlocal
+
+set "USE_MSVC=0"
+set "MINGW_ROOT=E:\MinGW64"
 
 @REM Check DevCmd
-if exist "%ProgramFiles%\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" (
-  call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
-) else if exist "%ProgramFiles%\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat" (
-  call "%ProgramFiles%\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat"
-) else (
-  echo Visual Studio or Build Tools not found. Please install one of them.
-  exit /b 1
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" (
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat"
+  set "USE_MSVC=1"
+) else if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\18\BuildTools\Common7\Tools\VsDevCmd.bat" (
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio\18\BuildTools\Common7\Tools\VsDevCmd.bat"
+  set "USE_MSVC=1"
+)
+
+if "%USE_MSVC%"=="0" (
+  if not exist "%MINGW_ROOT%\bin\gcc.exe" (
+    echo Neither MSVC nor MinGW64 found.
+    exit /b 1
+  )
+  set "PATH=%MINGW_ROOT%\bin;%PATH%"
 )
 
 cls
@@ -20,18 +32,27 @@ echo SRC_DIR is %SRC_DIR%
 echo BUILD_DIR is %BUILD_DIR%
 
 if exist "%BUILD_DIR%" rmdir /s /q "%BUILD_DIR%"
-
 mkdir "%BUILD_DIR%"
 
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%"
+if "%USE_MSVC%"=="1" (
+  cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Visual Studio 18 2026"
+) else (
+  cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "MinGW Makefiles"
+)
 if errorlevel 1 (
   pause
   exit /b %errorlevel%
 )
-cmake --build "%BUILD_DIR%" --config Release
+
+if "%USE_MSVC%"=="1" (
+  cmake --build "%BUILD_DIR%" --config Release
+) else (
+  cmake --build "%BUILD_DIR%"
+)
 if errorlevel 1 (
   pause
   exit /b %errorlevel%
 )
+
 echo 'launcher.exe' is at 'build/Release'
 pause

@@ -1,10 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
+
+# Default to 'Release'
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+endif ()
+
 project(launcher)
 
-# MSVC Edit-and-Continue policy
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+# MSVC-specific configuration
+if (MSVC)
+  # Set toolset version manually
+  set(CMAKE_GENERATOR_TOOLSET "v145" CACHE STRING "Platform Toolset to use for MSVC build." FORCE)
+
+  # MSVC Edit-and-Continue policy
+  if (POLICY CMP0141)
+    cmake_policy(SET CMP0141 NEW)
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+  endif ()
 endif ()
 
 set(SRC launcher.cpp)
@@ -36,6 +48,20 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET launcher PROPERTY CXX_STANDARD 20)
 endif ()
 
-target_compile_definitions(launcher PRIVATE UNICODE _UNICODE)
-target_compile_options(launcher PRIVATE "$<$<AND:$<CONFIG:Release>,$<C_COMPILER_ID:MSVC>>:/O2>" "$<$<AND:$<CONFIG:Release>,$<NOT:$<C_COMPILER_ID:MSVC>>>:-O3>")
+if (MSVC)
+  target_compile_definitions(launcher PRIVATE UNICODE _UNICODE)
+else ()
+  target_compile_definitions(launcher PRIVATE WIN32)
+endif ()
+
+target_compile_options(launcher PRIVATE
+        # MSVC (cl.exe) options
+        "$<$<C_COMPILER_ID:MSVC>:/W4>"
+        "$<$<C_COMPILER_ID:MSVC>:/utf-8>"
+        "$<$<AND:$<CONFIG:Release>,$<C_COMPILER_ID:MSVC>>:/O2>"
+        # MinGW (gcc.exe) options
+        "$<$<C_COMPILER_ID:GNU>:-Wall>"
+        "$<$<AND:$<CONFIG:Release>,$<C_COMPILER_ID:GNU>>:-O3>"
+)
+
 target_link_libraries(launcher PRIVATE user32)
