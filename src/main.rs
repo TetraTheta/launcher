@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::ptr::{null, null_mut};
 use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, HWND};
 use windows_sys::Win32::System::Environment::ExpandEnvironmentStringsW;
-use windows_sys::Win32::System::Threading::{CREATE_UNICODE_ENVIRONMENT, CreateProcessW, PROCESS_INFORMATION, STARTUPINFOW};
+use windows_sys::Win32::System::Threading::{CREATE_UNICODE_ENVIRONMENT, CreateProcessW, PROCESS_INFORMATION, STARTF_FORCEONFEEDBACK, STARTUPINFOW};
 use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
 
 const DEFAULT_INI_CONTENT: &str = "[launcher]\r\nprogram=\r\nargument=\r\n[environment]\r\nENV_KEY_1=ENV_KEY_1_VALUE\r\n";
@@ -178,6 +178,7 @@ fn main() {
   // Win32 프로세스 생성 구조체 초기화
   let mut si: STARTUPINFOW = unsafe { std::mem::zeroed() };
   si.cb = size_of::<STARTUPINFOW>() as u32;
+  si.dwFlags = STARTF_FORCEONFEEDBACK;
   let mut pi: PROCESS_INFORMATION = unsafe { std::mem::zeroed() };
 
   let cmd_line_storage = if argument.is_empty() { String::new() } else { format!("\"{program}\" {argument}") };

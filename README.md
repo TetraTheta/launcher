@@ -26,6 +26,8 @@ ENV_KEY_3=ENV_KEY_3_VALUE
 
 `program`, `argument`, and every value in `[environment]` are expanded with Windows-style environment variables (`%VAR%`) before launch.
 
+Windows displays its standard Working in Background cursor immediately while a GUI target starts and controls when it returns to normal.
+
 Example:
 
 * `program=%AppData%\Program\VSCode\code.exe`
